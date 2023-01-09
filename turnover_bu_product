@@ -1,0 +1,47 @@
+WITH
+  s_source AS (
+  SELECT
+    Num_BusinessUnit,
+    Num_Product,
+    Amt_TurnoverGrossSales_eur,
+    -- Amt_TurnoverGrossSales,
+    Date_Sales,
+  FROM
+    `dfdd-performances-benchmark.BenchmarkData.taSalesProductStoreDay` AS sales
+  WHERE
+    Date_Sales > "2020-12-31"
+    AND Date_Sales <"2022-01-01" ),
+    ####################################
+  lib_bu AS (
+  SELECT
+    NUM_BU,
+    LIB_BU,
+    LIB_BUCRT
+  FROM
+    `dfdp-teradata6y.BaseGeneriqueAsfr.TA015_BAG_LIBBUPAY`),
+  final AS (
+  SELECT
+    Num_BusinessUnit,
+    SUM(Amt_TurnoverGrossSales_eur) AS turnoverGross,
+    count (DISTINCT Num_Product) AS Nbr_Product,
+  FROM
+    s_source AS sales
+  GROUP BY
+    1
+  ORDER BY
+    1)
+  ####################################
+SELECT
+  Num_BusinessUnit,
+  lib_bu.LIB_BU,
+  turnoverGross,
+  Nbr_Product,
+  turnoverGross / Nbr_Product AS TOpPro
+FROM
+  final
+LEFT JOIN
+  lib_bu
+ON
+  Num_BusinessUnit = NUM_BU
+ORDER BY
+  Num_BusinessUnit
