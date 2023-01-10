@@ -3,6 +3,7 @@ WITH
   SELECT
     Num_BusinessUnit,
     Num_Product,
+    Num_SalesChannel,
     Amt_TurnoverGrossSales_eur,
     -- Amt_TurnoverGrossSales,
     Date_Sales,
@@ -11,37 +12,35 @@ WITH
   WHERE
     Date_Sales > "2020-12-31"
     AND Date_Sales <"2022-01-01" ),
-    ####################################
-  lib_bu AS (
-  SELECT
-    NUM_BU,
-    LIB_BU,
-    LIB_BUCRT
-  FROM
-    `dfdp-teradata6y.BaseGeneriqueAsfr.TA015_BAG_LIBBUPAY`),
-  final AS (
-  SELECT
-    Num_BusinessUnit,
-    SUM(Amt_TurnoverGrossSales_eur) AS turnoverGross,
-    count (DISTINCT Num_Product) AS Nbr_Product,
-  FROM
-    s_source AS sales
-  GROUP BY
-    1
-  ORDER BY
-    1)
-  ####################################
-SELECT
+
+################################
+lib_bu as (
+select  
+NUM_BU,  LIB_BU, LIB_BUCRT
+from `dfdp-teradata6y.BaseGeneriqueAsfr.TA015_BAG_LIBBUPAY`),
+
+final as (SELECT
+  Num_BusinessUnit,
+  Num_SalesChannel,
+  SUM(Amt_TurnoverGrossSales_eur) AS turnoverGross,
+  count (DISTINCT Num_Product) as Nbr_Product,
+  
+FROM
+  s_source AS sales
+GROUP BY
+  1,2
+ORDER BY
+  1)
+
+
+  SELECT 
   Num_BusinessUnit,
   lib_bu.LIB_BU,
+  Num_SalesChannel,
   turnoverGross,
   Nbr_Product,
-  turnoverGross / Nbr_Product AS TOpPro
-FROM
-  final
-LEFT JOIN
-  lib_bu
-ON
-  Num_BusinessUnit = NUM_BU
-ORDER BY
-  Num_BusinessUnit
+  turnoverGross / Nbr_Product as TOpPro
+  from final
+  left join lib_bu
+  on Num_BusinessUnit = NUM_BU
+  order by Num_BusinessUnit
