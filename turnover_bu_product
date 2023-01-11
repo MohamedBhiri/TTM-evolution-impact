@@ -39,7 +39,9 @@ ORDER BY
   Num_SalesChannel,
   turnoverGross,
   Nbr_Product,
-  turnoverGross / Nbr_Product as TOpPro
+  turnoverGross / Nbr_Product as TOpPro,
+  # TO per product per working day (365 - 52 saturdays - 7 off)
+  (turnoverGross / Nbr_Product)/ 306 as TOpPropDay
   from final
   left join lib_bu
   on Num_BusinessUnit = NUM_BU
